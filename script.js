@@ -1,4 +1,5 @@
 const output = document.getElementById("output");
+const btn = document.getElementById("download-images-button");
 
 const images = [
   { url: "https://picsum.photos/id/237/200/300" },
@@ -6,30 +7,29 @@ const images = [
   { url: "https://picsum.photos/id/239/200/300" },
 ];
 
-window.addEventListener("load", () => {
-  downloadImages(images)
+function downloadImage(image) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.src = image.url;
+
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(`Failed to load image's URL: ${image.url}`);
+  });
+}
+
+function downloadAllImages() {
+  output.innerHTML = "Loading images...";
+
+  Promise.all(images.map(downloadImage))
     .then((loadedImages) => {
+      output.innerHTML = "";
       loadedImages.forEach((img) => {
         output.appendChild(img);
       });
     })
     .catch((error) => {
-      console.error(error);
-      const errorMessage = document.createElement("p");
-      errorMessage.textContent = error;
-      output.appendChild(errorMessage);
+      output.innerHTML = error;
     });
-});
-
-function downloadImages(imageArray) {
-  const promises = imageArray.map((image) => {
-    return new Promise((resolve, reject) => {
-      const imgElement = new Image();
-      imgElement.src = image.url;
-      imgElement.onload = () => resolve(imgElement);
-      imgElement.onerror = () => reject(`Failed to load image's URL: ${image.url}`);
-    });
-  });
-
-  return Promise.all(promises);
 }
+
+btn.addEventListener("click", downloadAllImages);
